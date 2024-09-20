@@ -1,0 +1,77 @@
+services:
+  backend:
+    build:
+      context: ./media-scraper-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - DB_NAME=mediadb
+      - NODE_ENV=development
+      - AUTH0_ISSUER_URL=https://dev-qvyzoqvyrb056ybx.us.auth0.com/
+      - AUTH0_AUDIENCE=media-scraper-app-576896935
+    depends_on:
+      - db
+    volumes:
+      - ./media-scraper-backend:/app
+      - /app/node_modules
+    networks:
+      - appnetwork
+
+  frontend:
+    build:
+      context: ./media-scraper-frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - VITE_AUTH0_DOMAIN=dev-qvyzoqvyrb056ybx.us.auth0.com
+      - VITE_AUTH0_CLIENT_ID=7o36ShVJMRxKmiY1YvjHzE1FHT7Myoma
+      - VITE_API_BASE_URL=http://localhost:3000
+      - VITE_AUTH0_AUDIENCE=media-scraper-app-576896935
+    depends_on:
+      - backend
+    volumes:
+      - ./media-scraper-frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - appnetwork
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mediadb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - appnetwork
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_LISTEN_PORT=80
+    ports:
+      - "5050:80"
+    networks:
+      - appnetwork
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+
+networks:
+  appnetwork:
