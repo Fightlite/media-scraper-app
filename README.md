@@ -5,6 +5,8 @@ The question: Imagine you're given 1 CPU and 1GB RAM server to run the BE, how c
 
 My answer is: Implement the serverless architecture to loosely couple the scraper and the backend application (1 CPU and 1GB RAM), so that the scraper can be scaled independently of the backend application. I can split the urls into batches send them into an AWS SQS, then trigger a Lambda function for each batch of provided URLs. The Lambda function will then scrape the urls images and videos URLs and store the data into an RDS Postgres database which is the same DB using by the backend application. The RDS Proxy will handle the connection pooling for the Postgres database. I need to configure the Lambda function to run in a VPC to allow it to access the RDS Postgres database.
 
+![AWS Architecture](https://github.com/user-attachments/assets/d41f9be9-f656-4d35-a62b-b348b66150b7)
+
 My idea can be illustrated in the following steps:
 
 1. Split the 5000 URLs into batches and send them into an AWS SQS.
